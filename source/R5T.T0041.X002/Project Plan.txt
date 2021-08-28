@@ -1,0 +1,4 @@
+R5T.T0041.X002 - IPathOperator and related operator basic extensions for stringly-typed paths.
+
+Goals
+
