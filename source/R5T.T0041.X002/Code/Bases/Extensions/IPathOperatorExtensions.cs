@@ -52,12 +52,52 @@ namespace System
             return output;
         }
 
+        /// <summary>
+        /// Chooses <see cref="CombineWithoutModification(IPathOperator, string, char, string)"/> as the default.
+        /// </summary>
+        public static string Combine(this IPathOperator _,
+            string prefixPathPart,
+            char directorySeparator,
+            string suffixPathPart)
+        {
+            var output = _.CombineWithoutModification(
+                prefixPathPart,
+                directorySeparator,
+                suffixPathPart);
+
+            return output;
+        }
+
+        /// <summary>
+        /// Uses <see cref="DetectDirectorySeparatorOrStandardCharacter(IPathOperator, string)"/> to get a directory separator, and chooses <see cref="CombineEnsuringDirectorySeparator(IPathOperator, string, char, string)"/> as the default.
+        /// </summary>
+        public static string Combine(this IPathOperator _,
+            string prefixPathPart,
+            string postfixPathPart)
+        {
+            var directorySeparator = _.DetectDirectorySeparatorOrStandardCharacter(prefixPathPart);
+
+            var output = _.CombineEnsuringDirectorySeparator(prefixPathPart, directorySeparator, postfixPathPart);
+            return output;
+        }
+
         public static string CombineWithoutModification(this IPathOperator _,
             string prefixPath,
             char directorySeparator,
             string suffixPath)
         {
             var output = $"{prefixPath}{directorySeparator}{suffixPath}";
+            return output;
+        }
+
+        public static string CombineEnsuringDirectorySeparator(this IPathOperator _,
+            string prefixPath,
+            char directorySeparator,
+            string suffixPath)
+        {
+            var possiblyMixedDirectorySeparatorPath = $"{prefixPath}{directorySeparator}{suffixPath}";
+
+            var output = _.EnsureDirectorySeparator(possiblyMixedDirectorySeparatorPath, directorySeparator);
             return output;
         }
 
@@ -69,14 +109,18 @@ namespace System
             return output;
         }
 
-        public static string AppendDirectoryNameToDirectoryPath(this IPathOperator _,
-            string directoryPath,
-            string directoryName)
+        public static string AppendDirectoryRelativePathToDirectoryPath(this IPathOperator _,
+            string parentDirectoryPath,
+            string childRelativeDirectoryPath)
         {
-            var directoryIndicatedDirectoryPath = _.EnsureIsDirectoryIndicated(directoryPath);
-            var notRelativeDirectoryName = _.EnsureIsNotRelativeIndicated(directoryName);
+            var directoryIndicatedDirectoryPath = _.EnsureIsDirectoryIndicated(parentDirectoryPath);
+            var notRelativeDirectoryRelativePath = _.EnsureIsNotRelativeIndicated(childRelativeDirectoryPath);
 
-            var output = _.CombineWithoutModification(directoryIndicatedDirectoryPath, notRelativeDirectoryName);
+            var possiblyMixedDirectorySeparatorDirectoryPath = _.CombineWithoutModification(directoryIndicatedDirectoryPath, notRelativeDirectoryRelativePath);
+
+            var directorySeparator = _.DetectDirectorySeparatorOrStandardCharacter(directoryIndicatedDirectoryPath);
+
+            var output = _.EnsureDirectorySeparator(possiblyMixedDirectorySeparatorDirectoryPath, directorySeparator);
             return output;
         }
 
@@ -86,7 +130,7 @@ namespace System
             var isRelativeIndicated = _.IsRelativeIndicated(path);
             if(isRelativeIndicated)
             {
-                var output = path.ExceptFirst();
+                var output = path.ExceptFirstCharacter();
                 return output;
             }
             else
@@ -114,20 +158,28 @@ namespace System
             }
             else
             {
-                var directorySeparator = _.DetectDirectorySeparatorOrDefaultCharacter(path);
+                var directorySeparator = _.DetectDirectorySeparatorOrStandardCharacter(path);
 
                 var output = path + directorySeparator;
                 return output;
             }
         }
 
+        public static string GetLastPathToken(this IPathOperator _,
+            string path)
+        {
+            // Remove empty entries in case path is a directory path and is directory-indicated (final character is a directory separator).
+            var pathTokens = path.Split(Instances.DirectorySeparator.BothCharacters(), StringSplitOptions.RemoveEmptyEntries);
+
+            var fileName = pathTokens.Last();
+            return fileName;
+        }
+
         public static string GetFileNameForFilePath(this IPathOperator _,
             string filePath)
         {
-            var filePathTokens = filePath.Split(Instances.DirectorySeparator.BothCharacters());
-
-            var fileName = filePathTokens.Last();
-            return fileName;
+            var output = _.GetLastPathToken(filePath);
+            return output;
         }
 
         public static string GetFileNameStemForFilePath(this IPathOperator _,
@@ -139,13 +191,33 @@ namespace System
             return fileNameStem;
         }
 
+        public static string GetParentDirectoryPath(this IPathOperator _,
+            string path)
+        {
+            var lastIndex = path.LastIndexOfAny(Instances.DirectorySeparator.EitherCharacter());
+
+            var indexFound = StringHelper.IsFound(lastIndex);
+            if (!indexFound)
+            {
+                throw new Exception("Directory separator not found.");
+            }
+
+            var output = path.BeginningByIndex(lastIndex);
+            return output;
+        }
+
         public static string GetFilePath(this IPathOperator _,
             string directoryPath,
-            string fileName)
+            string fileRelativePath)
         {
-            var directorySeparator = _.DetectDirectorySeparatorOrDefaultCharacter(directoryPath);
+            var directoryIndicatedDirectoryPath = _.EnsureIsDirectoryIndicated(directoryPath);
+            var notRelativeFileRelativePath = _.EnsureIsNotRelativeIndicated(fileRelativePath);
 
-            var filePath = _.CombineWithoutModification(directoryPath, directorySeparator, fileName);
+            var possiblyMixedDirectorySeparatorFilePath = _.CombineWithoutModification(directoryIndicatedDirectoryPath, notRelativeFileRelativePath);
+
+            var directorySeparator = _.DetectDirectorySeparatorOrStandardCharacter(directoryPath);
+
+            var filePath = _.EnsureDirectorySeparator(possiblyMixedDirectorySeparatorFilePath, directorySeparator);
             return filePath;
         }
 
@@ -156,6 +228,20 @@ namespace System
 
             var output = Instances.DirectorySeparator.IsDirectorySeparator(lastCharacter);
             return output;
+        }
+
+        public static bool HasParentDirectory(this IPathOperator _,
+            string path)
+        {
+            // If a path has at least two directory separators, then it has a parent.
+            var directorySeparators = Instances.DirectorySeparator.BothCharacters();
+
+            var countOfDirectorySeparators = path
+                .Where(character => directorySeparators.Contains(character))
+                .Count();
+
+            var hasParentDirectory = countOfDirectorySeparators > 1;
+            return hasParentDirectory;
         }
 
         public static WasFound<char> HasDirectorySeparatorCharacter(this IPathOperator _,
@@ -174,7 +260,7 @@ namespace System
             return output;
         }
 
-        public static char DetectDirectorySeparatorOrDefaultCharacter(this IPathOperator _,
+        public static char DetectDirectorySeparatorOrStandardCharacter(this IPathOperator _,
             string path)
         {
             var wasFound = _.HasDirectorySeparatorCharacter(path);
@@ -217,6 +303,19 @@ namespace System
             return output;
         }
 
+        public static string EnsureDirectorySeparator(this IPathOperator _,
+            string path,
+            char directorySeparator)
+        {
+            var otherDirectorySeparator = Instances.DirectorySeparator.GetOtherCharacter(directorySeparator);
+
+            var output = path.Replace(
+                otherDirectorySeparator,
+                directorySeparator);
+
+            return output;
+        }
+
         public static bool IsPathSubPathOfParentPath(this IPathOperator _,
             string path,
             string parentPath)
@@ -239,18 +338,25 @@ namespace System
             return output;
         }
 
+        public static string GetDirectoryPath(this IPathOperator _,
+            string parentDirectoryPath,
+            string childDirectoryRelativePath)
+        {
+            var output = _.AppendDirectoryRelativePathToDirectoryPath(parentDirectoryPath, childDirectoryRelativePath);
+            return output;
+        }
+
         public static string GetDirectoryPathOfFilePath(this IPathOperator _,
             string filePath)
         {
-            var lastIndex = filePath.LastIndexOfAny(Instances.DirectorySeparator.EitherCharacter());
+            var output = _.GetParentDirectoryPath(filePath);
+            return output;
+        }
 
-            var indexFound = StringHelper.IsFound(lastIndex);
-            if (!indexFound)
-            {
-                throw new Exception("Directory separator not found.");
-            }
-
-            var output = filePath.BeginningByIndex(lastIndex);
+        public static string GetDirectoryNameOfDirectoryPath(this IPathOperator _,
+            string directoryPath)
+        {
+            var output = _.GetLastPathToken(directoryPath);
             return output;
         }
     }

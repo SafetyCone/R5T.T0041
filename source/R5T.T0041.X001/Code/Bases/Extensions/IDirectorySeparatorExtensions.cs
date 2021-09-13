@@ -40,6 +40,28 @@ namespace System
             return output;
         }
 
+        public static string GetOther(this IDirectorySeparator _,
+            string directorySeparator)
+        {
+            var output = directorySeparator == _.Windows()
+                ? _.NonWindows()
+                : _.Windows()
+                ;
+
+            return output;
+        }
+
+        public static char GetOtherCharacter(this IDirectorySeparator _,
+            char directorySeparator)
+        {
+            var output = directorySeparator == _.WindowsCharacter()
+                ? _.NonWindowsCharacter()
+                : _.WindowsCharacter()
+                ;
+
+            return output;
+        }
+
         public static string Invalid(this IDirectorySeparator _)
         {
             return DirectorySeparators.Invalid;
