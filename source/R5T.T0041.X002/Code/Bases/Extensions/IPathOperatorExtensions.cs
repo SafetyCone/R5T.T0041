@@ -316,18 +316,39 @@ namespace System
             return output;
         }
 
+        public static string[] GetPathParts(this IPathOperator _,
+            string path)
+        {
+            var output = path.Split(Instances.DirectorySeparator.BothCharacters(), StringSplitOptions.RemoveEmptyEntries);
+            return output;
+        }
+
         public static bool IsPathSubPathOfParentPath(this IPathOperator _,
             string path,
             string parentPath)
         {
-            var pathStandardized = _.EnsureStandardDirectorySeparator(path);
-            var parentPathStandardized = _.EnsureStandardDirectorySeparator(parentPath);
+            var pathParts = _.GetPathParts(path);
+            var parentPathParts = _.GetPathParts(parentPath);
 
-            var output = Instances.StringOperator.BeginsWith(
-                pathStandardized,
-                parentPathStandardized);
+            var countOfParentPathParts = parentPathParts.Length;
+            var maxParentPathPartIndex = countOfParentPathParts - 1; // Index equals count minus one.
 
-            return output;
+            var isPathInParent = true;
+            for (int iPathPart = 0; iPathPart < countOfParentPathParts; iPathPart++)
+            {
+                var currentPathPartIndex = maxParentPathPartIndex - iPathPart;
+
+                var partPart = pathParts[currentPathPartIndex];
+                var parentPathPart = parentPathParts[currentPathPartIndex];
+
+                if(partPart != parentPathPart)
+                {
+                    isPathInParent = false;
+                    break;
+                }
+            }
+
+            return isPathInParent;
         }
         
         public static bool IsFileInDirectoryOrSubDirectories(this IPathOperator _,
@@ -343,6 +364,19 @@ namespace System
             string childDirectoryRelativePath)
         {
             var output = _.AppendDirectoryRelativePathToDirectoryPath(parentDirectoryPath, childDirectoryRelativePath);
+            return output;
+        }
+
+        public static string GetDirectoryPath(this IPathOperator _,
+            string parentDirectoryPath,
+            params string[] subPathParts)
+        {
+            var output = parentDirectoryPath;
+            foreach (var subPathPart in subPathParts)
+            {
+                output = _.AppendDirectoryRelativePathToDirectoryPath(parentDirectoryPath, subPathPart);
+            }
+
             return output;
         }
 
