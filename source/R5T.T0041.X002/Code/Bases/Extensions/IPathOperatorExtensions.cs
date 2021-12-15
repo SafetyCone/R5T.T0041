@@ -350,7 +350,18 @@ namespace System
 
             return isPathInParent;
         }
-        
+
+        public static bool IsFileInDirectoryOrSubDirectoriesOfFileDirectory(this IPathOperator _,
+            string filePath,
+            string parentFilePath)
+        {
+            var parentDirectoryPath = _.GetDirectoryPathOfFilePath(parentFilePath);
+
+            var output = _.IsFileInDirectoryOrSubDirectories(filePath, parentDirectoryPath);
+            return output;
+        }
+
+
         public static bool IsFileInDirectoryOrSubDirectories(this IPathOperator _,
             string filePath,
             string directoryPath)
