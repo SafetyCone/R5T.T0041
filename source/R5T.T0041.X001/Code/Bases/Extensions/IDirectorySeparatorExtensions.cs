@@ -18,6 +18,22 @@ namespace System
             return output;
         }
 
+        /// <summary>
+        /// Defines the Windows directory separator as the Default.
+        /// </summary>
+        public static string Default(this IDirectorySeparator _)
+        {
+            return DirectorySeparators.Default;
+        }
+
+        /// <summary>
+        /// Defines the Windows directory separator as the Default.
+        /// </summary>
+        public static char DefaultCharacter(this IDirectorySeparator _)
+        {
+            return DirectorySeparators.DefaultCharacter;
+        }
+
         public static string[] Either(this IDirectorySeparator _)
         {
             var output = new[]
@@ -94,7 +110,7 @@ namespace System
         /// </summary>
         public static string Standard(this IDirectorySeparator _)
         {
-            return _.Windows();
+            return DirectorySeparators.Standard;
         }
 
         /// <summary>
@@ -102,7 +118,7 @@ namespace System
         /// </summary>
         public static char StandardCharacter(this IDirectorySeparator _)
         {
-            return _.WindowsCharacter();
+            return DirectorySeparators.StandardCharacter;
         }
 
         public static string Windows(this IDirectorySeparator _)

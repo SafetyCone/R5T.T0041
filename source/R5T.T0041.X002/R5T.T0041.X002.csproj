@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\R5T.Magyar\source\R5T.Magyar.T002.X000\R5T.Magyar.T002.X000.csproj" />
     <ProjectReference Include="..\..\..\R5T.Magyar\source\R5T.Magyar.T002\R5T.Magyar.T002.csproj" />
+    <ProjectReference Include="..\..\..\R5T.T0021\source\R5T.T0021.X003\R5T.T0021.X003.csproj" />
     <ProjectReference Include="..\..\..\R5T.T0042\source\R5T.T0042.X001\R5T.T0042.X001.csproj" />
     <ProjectReference Include="..\R5T.T0041.X001\R5T.T0041.X001.csproj" />
     <ProjectReference Include="..\R5T.T0041\R5T.T0041.csproj" />
