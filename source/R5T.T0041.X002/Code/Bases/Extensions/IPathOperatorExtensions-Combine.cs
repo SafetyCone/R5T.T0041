@@ -48,7 +48,10 @@ namespace System
             char directorySeparator,
             string suffixPath)
         {
-            var possiblyMixedDirectorySeparatorPath = $"{prefixPath}{directorySeparator}{suffixPath}";
+            var ensuredPrefixPath = _.EnsureIsNotDirectoryIndicated(prefixPath);
+            var ensuredSuffixPath = _.EnsureIsNotRelativeIndicated(suffixPath);
+
+            var possiblyMixedDirectorySeparatorPath = $"{ensuredPrefixPath}{directorySeparator}{ensuredSuffixPath}";
 
             var output = _.EnsureDirectorySeparator(possiblyMixedDirectorySeparatorPath, directorySeparator);
             return output;
