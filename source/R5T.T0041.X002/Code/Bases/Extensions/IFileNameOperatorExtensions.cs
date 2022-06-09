@@ -10,6 +10,16 @@ namespace System
 {
     public static class IFileNameOperatorExtensions
     {
+        public static string GetFileExtensionFromFileName(this IFileNameOperator _,
+            string fileName)
+        {
+            var index = fileName.LastIndexOf(Instances.FileExtensionSeparator.DefaultCharacter());
+
+            // Handle file names that might have dots in them.
+            var fileNameStem = fileName[(index + 1)..];
+            return fileNameStem;
+        }
+
         public static string GetFileName(this IFileNameOperator _,
             string fileNameStem,
             string fileExtension)
