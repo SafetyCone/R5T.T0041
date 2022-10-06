@@ -10,7 +10,7 @@ namespace R5T.T0041
     {
         #region Static
 
-        public static FileNameOperator Instance { get; } = new();
+        public static IFileNameOperator Instance { get; } = new FileNameOperator();
 
         #endregion
     }

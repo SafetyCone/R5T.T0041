@@ -10,7 +10,7 @@ namespace R5T.T0041
     {
         #region Static
 
-        public static PathOperator Instance { get; } = new();
+        public static IPathOperator Instance { get; } = new PathOperator();
 
         #endregion
     }

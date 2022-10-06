@@ -10,7 +10,7 @@ namespace R5T.T0041
     {
         #region Static
 
-        public static FileExtensionSeparator Instance { get; } = new();
+        public static IFileExtensionSeparator Instance { get; } = new FileExtensionSeparator();
 
         #endregion
     }

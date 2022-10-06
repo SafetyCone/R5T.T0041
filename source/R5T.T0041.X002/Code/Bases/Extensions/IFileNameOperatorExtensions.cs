@@ -16,7 +16,7 @@ namespace System
             var index = fileName.LastIndexOf(Instances.FileExtensionSeparator.DefaultCharacter());
 
             // Handle file names that might have dots in them.
-            var fileNameStem = fileName[(index + 1)..];
+            var fileNameStem = fileName.Substring(index + 1);
             return fileNameStem;
         }
 

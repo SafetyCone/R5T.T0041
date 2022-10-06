@@ -10,7 +10,7 @@ namespace R5T.T0041
     {
         #region Static
 
-        public static DirectorySeparator Instance { get; } = new();
+        public static IDirectorySeparator Instance { get; } = new DirectorySeparator();
 
         #endregion
     }
